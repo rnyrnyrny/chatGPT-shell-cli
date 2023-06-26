@@ -18,6 +18,12 @@ if [[ -z "$OPENAI_KEY" ]]; then
 	exit 1
 fi
 
+if [[ -z "$OPENAI_BASE_URL" ]]; then
+    OPENAI_BASE_URL="https://api.openai.com"
+    #https://api.openai.myhispread.com
+    exit 1
+fi
+
 usage() {
 	cat <<EOF
 A simple, lightweight shell script to use OpenAI's Language Models and DALL-E from the terminal without installing Python or Node.js. Open Source and written in 100% Shell (Bash) 
@@ -81,7 +87,7 @@ handle_error() {
 # request to openAI API models endpoint. Returns a list of models
 # takes no input parameters
 list_models() {
-	models_response=$(curl https://api.openai.com/v1/models \
+	models_response=$(curl $OPENAI_BASE_URL/v1/models \
 		-sS \
 		-H "Authorization: Bearer $OPENAI_KEY")
 	handle_error "$models_response"
@@ -94,7 +100,7 @@ list_models() {
 request_to_completions() {
 	local prompt="$1"
 
-	curl https://api.openai.com/v1/completions \
+	curl $OPENAI_BASE_URL/v1/completions \
 		-sS \
 		-H 'Content-Type: application/json' \
 		-H "Authorization: Bearer $OPENAI_KEY" \
@@ -110,7 +116,7 @@ request_to_completions() {
 # $1 should be the prompt
 request_to_image() {
 	local prompt="$1"
-	image_response=$(curl https://api.openai.com/v1/images/generations \
+	image_response=$(curl $OPENAI_BASE_URL/v1/images/generations \
 		-sS \
 		-H 'Content-Type: application/json' \
 		-H "Authorization: Bearer $OPENAI_KEY" \
@@ -127,7 +133,7 @@ request_to_chat() {
 	local message="$1"
 	escaped_system_prompt=$(escape "$SYSTEM_PROMPT")
 	
-	curl https://api.openai.com/v1/chat/completions \
+	curl $OPENAI_BASE_URL/v1/chat/completions \
 		-sS \
 		-H 'Content-Type: application/json' \
 		-H "Authorization: Bearer $OPENAI_KEY" \
@@ -367,7 +373,7 @@ while $running; do
 	elif [[ "$prompt" == "models" ]]; then
 		list_models
 	elif [[ "$prompt" =~ ^model: ]]; then
-		models_response=$(curl https://api.openai.com/v1/models \
+		models_response=$(curl $OPENAI_BASE_URL/v1/models \
 			-sS \
 			-H "Authorization: Bearer $OPENAI_KEY")
 		handle_error "$models_response"
